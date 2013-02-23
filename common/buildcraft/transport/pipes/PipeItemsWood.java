@@ -27,6 +27,8 @@ import buildcraft.core.RedstonePowerFramework;
 import buildcraft.core.utils.Utils;
 import buildcraft.transport.Pipe;
 import buildcraft.transport.PipeTransportItems;
+import net.minecraftforge.inventory.IInventoryHandler;
+import net.minecraftforge.inventory.InventoryUtils;
 
 public class PipeItemsWood extends Pipe implements IPowerReceptor {
 
@@ -208,14 +210,15 @@ public class PipeItemsWood extends Pipe implements IPowerReceptor {
 	}
 
 	public ItemStack checkExtractGeneric(IInventory inventory, boolean doRemove, ForgeDirection from, int start, int stop) {
+		IInventoryHandler handler = InventoryUtils.getInventoryHandler(inventory);
 		for (int k = start; k <= stop; ++k) {
-			ItemStack slot = inventory.getStackInSlot(k);
-
-			if (slot != null && slot.stackSize > 0) {
+			int count = handler.getItemCountInSlot(inventory, k);
+			if (count > 0) {
 				if (doRemove) {
-					return inventory.decrStackSize(k, (int) powerProvider.useEnergy(1, slot.stackSize, true));
+					powerProvider.useEnergy(1, count, true);
+					return handler.takeItemFromInventory(inventory, from);
 				} else {
-					return slot;
+					return inventory.getStackInSlot(k);
 				}
 			}
 		}

@@ -30,6 +30,8 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.inventory.IInventoryHandler;
+import net.minecraftforge.inventory.InventoryUtils;
 
 public class PipeItemsEmerald extends PipeItemsWood implements ISpecialInventory, IClientState {
 
@@ -167,6 +169,7 @@ public class PipeItemsEmerald extends PipeItemsWood implements ISpecialInventory
 
 	@Override
 	public ItemStack checkExtractGeneric(IInventory inventory, boolean doRemove, ForgeDirection from, int start, int stop) {
+		IInventoryHandler handler = InventoryUtils.getInventoryHandler(inventory);
 		for (int i = start; i <= stop; ++i) {
 			ItemStack stack = inventory.getStackInSlot(i);
 			if (stack != null && stack.stackSize > 0) {
@@ -174,12 +177,14 @@ public class PipeItemsEmerald extends PipeItemsWood implements ISpecialInventory
 				if (filter == null) {
 					return null;
 				}
-				if (!filter.isItemEqual(stack)) {
+				int count = handler.getItemCountInSlot(inventory, i, filter);
+				if (count <= 0) {
 					continue;
 				}
 				if (doRemove) {
 					incrementFilter();
-					return inventory.decrStackSize(i, (int) getPowerProvider().useEnergy(1, stack.stackSize, true));
+					getPowerProvider().useEnergy(1, stack.stackSize, true);
+					return handler.takeItemFromInventorySlot(inventory, i);
 				} else {
 					return stack;
 				}

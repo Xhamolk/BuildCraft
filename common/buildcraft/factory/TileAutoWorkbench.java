@@ -11,6 +11,7 @@ package buildcraft.factory;
 
 import java.util.LinkedList;
 
+import buildcraft.core.inventory.TransactorDefault;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
@@ -25,12 +26,15 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerDestroyItemEvent;
 import buildcraft.api.core.Position;
 import buildcraft.api.inventory.ISpecialInventory;
-import buildcraft.core.inventory.TransactorRoundRobin;
 import buildcraft.core.proxy.CoreProxy;
 import buildcraft.core.utils.Utils;
 import buildcraft.core.utils.CraftingHelper;
+import net.minecraftforge.inventory.ICustomInventory;
+import net.minecraftforge.inventory.IDynamicInventory;
+import net.minecraftforge.inventory.IInventoryHandler;
+import net.minecraftforge.inventory.RoundRobinInventoryHandler;
 
-public class TileAutoWorkbench extends TileEntity implements ISpecialInventory {
+public class TileAutoWorkbench extends TileEntity implements ISpecialInventory, ICustomInventory {
 
 	private ItemStack stackList[] = new ItemStack[9];
 	private IRecipe currentRecipe = null;
@@ -277,6 +281,8 @@ public class TileAutoWorkbench extends TileEntity implements ISpecialInventory {
 			// Don't get stuff out of ISpecialInventory for now / we wouldn't
 			// know how to put it back... And it's not clear if we want to
 			// have workbenches automatically getting things from one another.
+		} else if (tile instanceof IDynamicInventory || tile instanceof ICustomInventory) {
+			// Same case as above. It could get a little weird.
 		} else if (tile instanceof IInventory) {
 			IInventory inventory = Utils.getInventory((IInventory) tile);
 
@@ -389,12 +395,18 @@ public class TileAutoWorkbench extends TileEntity implements ISpecialInventory {
 	/* ISPECIALINVENTORY */
 	@Override
 	public int addItem(ItemStack stack, boolean doAdd, ForgeDirection from) {
-		return new TransactorRoundRobin(this).add(stack, from, doAdd).stackSize;
+		return new TransactorDefault(this).add(stack, from, doAdd).stackSize;
 	}
 
 	@Override
 	public ItemStack[] extractItem(boolean doRemove, ForgeDirection from, int maxItemCount) {
 		return new ItemStack[] { extractItem(doRemove, false) };
+	}
+
+	// ICustomInventory
+	@Override
+	public IInventoryHandler getInventoryHandler() {
+		return new RoundRobinInventoryHandler();
 	}
 
 }
