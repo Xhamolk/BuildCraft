@@ -124,14 +124,9 @@ public class PipeItemsEmerald extends PipeItemsWood implements ISpecialInventory
 		}
 
 		if (inventory instanceof ISidedInventory) {
-			ISidedInventory sidedInv = (ISidedInventory) inventory;
-
-			int first = sidedInv.getStartInventorySide(from);
-			int last = first + sidedInv.getSizeInventorySide(from) - 1;
-
 			IInventory inv = Utils.getInventory(inventory);
 
-			ItemStack result = checkExtractGeneric(inv, doRemove, from, first, last);
+			ItemStack result = extractGeneric(inv, from);
 
 			if (result != null) {
 				return new ItemStack[]{result};
@@ -140,7 +135,7 @@ public class PipeItemsEmerald extends PipeItemsWood implements ISpecialInventory
 			// This is a generic inventory
 			IInventory inv = Utils.getInventory(inventory);
 
-			ItemStack result = checkExtractGeneric(inv, doRemove, from, 0, inv.getSizeInventory() - 1);
+			ItemStack result = extractGeneric(inv, from);
 
 			if (result != null) {
 				return new ItemStack[]{result};
@@ -168,29 +163,24 @@ public class PipeItemsEmerald extends PipeItemsWood implements ISpecialInventory
 	}
 
 	@Override
-	public ItemStack checkExtractGeneric(IInventory inventory, boolean doRemove, ForgeDirection from, int start, int stop) {
+	public ItemStack extractGeneric(IInventory inventory, ForgeDirection from) {
 		IInventoryHandler handler = InventoryUtils.getInventoryHandler(inventory);
-		for (int i = start; i <= stop; ++i) {
-			ItemStack stack = inventory.getStackInSlot(i);
-			if (stack != null && stack.stackSize > 0) {
-				ItemStack filter = getCurrentFilter();
-				if (filter == null) {
-					return null;
-				}
-				int count = handler.getItemCountInSlot(inventory, i, filter);
-				if (count <= 0) {
-					continue;
-				}
-				if (doRemove) {
-					incrementFilter();
-					getPowerProvider().useEnergy(1, stack.stackSize, true);
-					return handler.takeItemFromInventorySlot(inventory, i);
-				} else {
-					return stack;
-				}
+
+		int start = currentFilter;
+		int end = start + filters.getSizeInventory();
+		while (start < end) {
+			ItemStack filter = getCurrentFilter();
+			if (filter == null) {
+				return null;
+			}
+
+			int count = handler.getItemCountInInventory(inventory, filter, from);
+			incrementFilter();
+			if (count > 0) {
+				getPowerProvider().useEnergy(1, count, true);
+				return handler.takeItemFromInventory(inventory, filter, from);
 			}
 		}
-
 		return null;
 	}
 

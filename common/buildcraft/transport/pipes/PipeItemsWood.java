@@ -145,14 +145,9 @@ public class PipeItemsWood extends Pipe implements IPowerReceptor {
 		}
 
 		if (inventory instanceof ISidedInventory) {
-			ISidedInventory sidedInv = (ISidedInventory) inventory;
-
-			int first = sidedInv.getStartInventorySide(from);
-			int last = first + sidedInv.getSizeInventorySide(from) - 1;
-
 			IInventory inv = Utils.getInventory(inventory);
 
-			ItemStack result = checkExtractGeneric(inv, doRemove, from, first, last);
+			ItemStack result = extractGeneric(inv, from);
 
 			if (result != null)
 				return new ItemStack[] { result };
@@ -200,7 +195,7 @@ public class PipeItemsWood extends Pipe implements IPowerReceptor {
 			// This is a generic inventory
 			IInventory inv = Utils.getInventory(inventory);
 
-			ItemStack result = checkExtractGeneric(inv, doRemove, from, 0, inv.getSizeInventory() - 1);
+			ItemStack result = extractGeneric(inv, from);
 
 			if (result != null)
 				return new ItemStack[] { result };
@@ -209,21 +204,13 @@ public class PipeItemsWood extends Pipe implements IPowerReceptor {
 		return null;
 	}
 
-	public ItemStack checkExtractGeneric(IInventory inventory, boolean doRemove, ForgeDirection from, int start, int stop) {
+	public ItemStack extractGeneric(IInventory inventory, ForgeDirection from) {
 		IInventoryHandler handler = InventoryUtils.getInventoryHandler(inventory);
-		for (int k = start; k <= stop; ++k) {
-			int count = handler.getItemCountInSlot(inventory, k);
-			if (count > 0) {
-				if (doRemove) {
-					powerProvider.useEnergy(1, count, true);
-					return handler.takeItemFromInventory(inventory, from);
-				} else {
-					return inventory.getStackInSlot(k);
-				}
-			}
+		ItemStack stack = handler.takeItemFromInventory(inventory, null, from);
+		if (stack != null) {
+			powerProvider.useEnergy(1, stack.stackSize, true);
 		}
-
-		return null;
+		return stack;
 	}
 
 	@Override
