@@ -17,7 +17,6 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -32,7 +31,7 @@ import buildcraft.core.utils.CraftingHelper;
 import net.minecraftforge.inventory.ICustomInventory;
 import net.minecraftforge.inventory.IDynamicInventory;
 import net.minecraftforge.inventory.IInventoryHandler;
-import net.minecraftforge.inventory.RoundRobinInventoryHandler;
+import buildcraft.core.inventory.RoundRobinInventoryHandler;
 
 public class TileAutoWorkbench extends TileEntity implements ISpecialInventory, ICustomInventory {
 
@@ -406,7 +405,7 @@ public class TileAutoWorkbench extends TileEntity implements ISpecialInventory, 
 	// ICustomInventory
 	@Override
 	public IInventoryHandler getInventoryHandler() {
-		return new RoundRobinInventoryHandler();
+		return RoundRobinInventoryHandler.INSTANCE;
 	}
 
 }
