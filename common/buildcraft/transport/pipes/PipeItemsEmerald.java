@@ -148,7 +148,7 @@ public class PipeItemsEmerald extends PipeItemsWood implements ISpecialInventory
 	private void incrementFilter() {
 		currentFilter++;
 		int count = 0;
-		while (filters.getStackInSlot(currentFilter % filters.getSizeInventory()) == null && count < filters.getSizeInventory()) {
+		while (filters.getStackInSlot(currentFilter %= filters.getSizeInventory()) == null && count < filters.getSizeInventory()) {
 			currentFilter++;
 			count++;
 		}
@@ -166,20 +166,16 @@ public class PipeItemsEmerald extends PipeItemsWood implements ISpecialInventory
 	public ItemStack extractGeneric(IInventory inventory, ForgeDirection from) {
 		IInventoryHandler handler = InventoryUtils.getInventoryHandler(inventory);
 
-		int start = currentFilter;
-		int end = start + filters.getSizeInventory();
-		while (start < end) {
-			ItemStack filter = getCurrentFilter();
-			if (filter == null) {
-				return null;
-			}
+		ItemStack filter = getCurrentFilter();
+		if (filter == null) {
+			return null;
+		}
 
-			int count = handler.getItemCountInInventory(inventory, filter, from);
-			incrementFilter();
-			if (count > 0) {
-				getPowerProvider().useEnergy(1, count, true);
-				return handler.takeItemFromInventory(inventory, filter, from);
-			}
+		int count = handler.getItemCountInInventory(inventory, filter, from);
+		incrementFilter();
+		if (count > 0) {
+			getPowerProvider().useEnergy(1, count, true);
+			return handler.takeItemFromInventory(inventory, filter, from);
 		}
 		return null;
 	}
